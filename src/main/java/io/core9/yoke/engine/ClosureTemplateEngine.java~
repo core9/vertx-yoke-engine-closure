@@ -1,7 +1,6 @@
 package io.core9.yoke.engine;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.Map;
 
 import org.vertx.java.core.AsyncResult;
@@ -38,6 +37,11 @@ public class ClosureTemplateEngine extends Engine<String> {
 		}
 	}
 	
+	@Override
+	public void exists(String filename, final Handler<Boolean> next) {
+        next.handle(true);
+	}
+	
 	/**
 	 * (Re)compile the templates
 	 * @param vertx
@@ -53,14 +57,7 @@ public class ClosureTemplateEngine extends Engine<String> {
 						// Add all files in templates folder to templating engine
 						SoyFileSet.Builder builder = new SoyFileSet.Builder();
 						for(String file : event.result()) {
-							File current = new File(file);
-							if(current.isDirectory()) {
-								for(File found : traverseDirectory(current)) {
-									builder.add(found);
-								}
-							} else {
-								builder.add(current);
-							}
+							builder.add(new File(file));
 						}
 						tofu = builder.build().compileToTofu();
 						next.handle(true);
@@ -69,22 +66,4 @@ public class ClosureTemplateEngine extends Engine<String> {
 			}
 		});
 	}
-	
-	/**
-	 * Traverses a directory and adds all files to the result
-	 * @param folder
-	 * @return
-	 */
-	public static ArrayList<File> traverseDirectory(File folder) {
-		ArrayList<File> result = new ArrayList<File>();
-		for(File file : folder.listFiles()) {
-			if(file.isDirectory()) {
-				result.addAll(traverseDirectory(file));
-			} else {
-				result.add(file);
-			}
-		}
-		return result;
-	}
 }
-
